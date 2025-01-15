@@ -2,73 +2,138 @@
 
 A comprehensive blockchain platform with AI integration, DeFi capabilities, and cross-chain functionality.
 
+## Project Structure
+```
+├── src/
+│   ├── blockchain/          # Core blockchain implementation
+│   │   ├── block.py
+│   │   └── blockchain.py
+│   ├── smart_contracts/     # Smart contract system
+│   │   └── contract.py
+│   ├── ai/                  # AI integration
+│   │   └── predictor.py
+│   ├── api/                 # REST API
+│   │   └── routes.py
+│   ├── database/           # Database models and connection
+│   │   ├── models.py
+│   │   └── connection.py
+│   └── main.py
+├── frontend/               # React frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.js
+│   │   │   ├── Wallet.js
+│   │   │   └── BlockExplorer.js
+│   │   └── App.js
+│   └── package.json
+├── tests/                  # Test suite
+│   └── test_blockchain.py
+├── docker-compose.yml      # Docker configuration
+├── Dockerfile
+├── requirements.txt
+└── alembic.ini            # Database migrations
+```
+
 ## Features
 
 ### Core Components
 - Blockchain Core Implementation
 - Smart Contract System
-- AI Integration
-- Layer-2 Scaling
-- Cross-chain Bridge
-
-### DeFi Features
-- Liquidity Pools
-- Staking System
-- Yield Farming
-
-### Infrastructure
-- Database Models
+- AI Integration with Price Prediction
+- Database Integration
 - REST API
-- Monitoring System
-- Admin Tools
 
-### Frontend
+### Frontend Features
 - User Dashboard
 - Wallet Interface
 - Block Explorer
-- Admin Panel
 
-## Getting Started
-
-### Prerequisites
-- Python 3.9+
+## Prerequisites
+- Docker and Docker Compose
 - Node.js 14+
-- PostgreSQL
-- Redis
+- Python 3.9+
 
-### Installation
+## Quick Start with Docker
+
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/BurcUnalan/ADAC-Blockchain-Complete.git
+git clone https://github.com/AuronEvander/ADAC-Blockchain-Complete.git
 cd ADAC-Blockchain-Complete
+```
 
-# Set up Python environment
+2. Start the services using Docker Compose:
+```bash
+docker-compose up -d
+```
+
+This will start:
+- Backend API on port 8000
+- PostgreSQL database on port 5432
+- Redis on port 6379
+
+## Manual Setup
+
+### Backend Setup
+
+1. Create and activate a Python virtual environment:
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+```
 
-# Set up frontend
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up the database:
+```bash
+alembic upgrade head
+```
+
+4. Start the backend server:
+```bash
+python -m src.main
+```
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
 cd frontend
+```
+
+2. Install dependencies:
+```bash
 npm install
 ```
 
-## Development
+3. Start the development server:
 ```bash
-# Start backend
-python -m src.main
-
-# Start frontend
-cd frontend
-npm run dev
+npm start
 ```
 
-## Documentation
-See the [docs](./docs) directory for detailed documentation.
+## API Endpoints
+
+- GET `/chain` - Get the full blockchain
+- POST `/transactions/new` - Create a new transaction
+- GET `/mine` - Mine a new block
+- GET `/balance/{address}` - Get balance for an address
 
 ## Testing
+
+Run the test suite:
 ```bash
 pytest tests/
 ```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -am 'Add new feature'`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Submit a pull request
 
 ## License
 MIT
