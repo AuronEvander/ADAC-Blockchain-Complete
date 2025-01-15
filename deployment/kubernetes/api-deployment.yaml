@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adac-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: adac-api
+  template:
+    metadata:
+      labels:
+        app: adac-api
+    spec:
+      containers:
+      - name: api
+        image: adac-blockchain:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: adac-secrets
+              key: database-url
