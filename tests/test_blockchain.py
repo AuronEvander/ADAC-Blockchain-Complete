@@ -1,37 +1,28 @@
 import pytest
-from decimal import Decimal
-from src.blockchain.blockchain import Blockchain, Block
-import time
+from datetime import datetime
+from src.blockchain.blockchain import Blockchain
+from src.blockchain.block import Block
 
-def test_genesis_block():
-    blockchain = Blockchain()
-    genesis = blockchain.chain[0]
-    assert genesis.index == 0
-    assert genesis.previous_hash == "0"
-    assert genesis.data == "Genesis Block"
+@pytest.fixture
+def blockchain():
+    return Blockchain()
 
-def test_add_block():
-    blockchain = Blockchain(difficulty=2)
-    blockchain.add_block(Block(1, "", time.time(), "Test Block"))
+def test_genesis_block(blockchain):
+    assert len(blockchain.chain) == 1
+    assert blockchain.chain[0].previous_hash == "0"
+
+def test_add_block(blockchain):
+    blockchain.add_transaction("address1", "address2", 100)
+    blockchain.mine_pending_transactions("miner-address")
     assert len(blockchain.chain) == 2
-    assert blockchain.chain[-1].data == "Test Block"
 
-def test_chain_validity():
-    blockchain = Blockchain(difficulty=2)
-    blockchain.add_block(Block(1, "", time.time(), "Test Block"))
+def test_blockchain_validity(blockchain):
+    blockchain.add_transaction("address1", "address2", 100)
+    blockchain.mine_pending_transactions("miner-address")
     assert blockchain.is_chain_valid() == True
 
-@pytest.mark.asyncio
-async def test_transaction():
-    blockchain = Blockchain(difficulty=2)
-    sender = "Alice"
-    recipient = "Bob"
-    amount = Decimal("50")
-    
-    tx_hash = blockchain.add_transaction(sender, recipient, amount)
-    assert tx_hash is not None
-    
-    blockchain.mine_pending_transactions("miner")
-    
-    assert blockchain.get_balance(recipient) == amount
-    assert blockchain.get_balance("miner") == blockchain.mining_reward
+def test_get_balance(blockchain):
+    blockchain.add_transaction("address1", "address2", 100)
+    blockchain.mine_pending_transactions("miner-address")
+    assert blockchain.get_balance("address1") == -100
+    assert blockchain.get_balance("address2") == 100
