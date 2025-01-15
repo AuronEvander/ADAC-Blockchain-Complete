@@ -1,0 +1,13 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+
+ignore:
+  SNYK-PYTHON-CRYPTOGRAPHY-5777795:
+    - '*':
+        reason: 'No fix available, risk assessed'
+        expires: 2024-12-31T00:00:00.000Z
+  
+  SNYK-PYTHON-URLLIB3-3021780:
+    - '*':
+        reason: 'Requires major version upgrade'
+        expires: 2024-12-31T00:00:00.000Z
