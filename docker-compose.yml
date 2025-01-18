@@ -2,33 +2,40 @@ version: '3.8'
 
 services:
   backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src:/app/src
+      - ./models:/app/models
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - redis
+
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.frontend
     ports:
-      - "8000:8000"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      - DATABASE_URL=postgresql://adac:adac@postgres:5432/adac
-      - REDIS_URL=redis://redis:6379
-
-  postgres:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=adac
-      - POSTGRES_PASSWORD=adac
-      - POSTGRES_DB=adac
-    ports:
-      - "5432:5432"
+      - "3000:3000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - backend
 
   redis:
-    image: redis:6
+    image: redis:alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
-  postgres_data:
+  redis_data:
