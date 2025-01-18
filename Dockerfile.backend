@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.9-slim-bullseye
 
 WORKDIR /app
 
@@ -10,6 +10,12 @@ RUN apt-get update && apt-get install -y \
     git \
     libgomp1 \
     python3-dev \
+    gcc \
+    g++ \
+    gfortran \
+    libopenblas-dev \
+    liblapack-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip
@@ -28,5 +34,8 @@ RUN mkdir -p models
 
 EXPOSE 5000
 
-# Use gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "src.main:create_app()"]
+# Development mode
+ENV FLASK_ENV=development
+ENV FLASK_APP=src/main.py
+
+CMD ["flask", "run", "--host=0.0.0.0"]
