@@ -1,41 +1,34 @@
 import pytest
-from src.smart_contracts.contract import SmartContract
+from src.smart_contracts.token import Token
 
-def test_contract_creation():
-    owner = "Alice"
-    code = "test_code"
-    initial_state = {"value": 0}
-    
-    contract = SmartContract(owner, code, initial_state)
-    assert contract.owner == owner
-    assert contract.code == code
-    assert contract.state == initial_state
+def test_token_creation():
+    token = Token("Test Token", "TST")
+    assert token.name == "Test Token"
+    assert token.symbol == "TST"
+    assert token.total_supply == 0
 
-def test_contract_execution():
-    contract = SmartContract(
-        "Alice",
-        "test_code",
-        {"value": 0}
-    )
+def test_token_minting():
+    token = Token("Test Token", "TST")
+    success = token.mint("address1", 1000)
     
-    result = contract.execute(
-        "update_state",
-        {"value": 42},
-        "Alice"
-    )
-    assert result["success"] == True
-    assert contract.state["value"] == 42
+    assert success
+    assert token.total_supply == 1000
+    assert token.balances["address1"] == 1000
 
-def test_unauthorized_execution():
-    contract = SmartContract(
-        "Alice",
-        "test_code",
-        {"value": 0}
-    )
+def test_token_transfer():
+    token = Token("Test Token", "TST")
+    token.mint("address1", 1000)
     
-    result = contract.execute(
-        "owner_only",
-        {"value": 42},
-        "Bob"
-    )
-    assert result["success"] == False
+    success = token.transfer("address1", "address2", 500)
+    assert success
+    assert token.balances["address1"] == 500
+    assert token.balances["address2"] == 500
+
+def test_insufficient_balance():
+    token = Token("Test Token", "TST")
+    token.mint("address1", 1000)
+    
+    success = token.transfer("address1", "address2", 1500)
+    assert not success
+    assert token.balances["address1"] == 1000
+    assert "address2" not in token.balances
