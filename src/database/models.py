@@ -1,25 +1,37 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Table
+from sqlalchemy.orm import declarative_base, relationship
+from datetime import datetime
 
 Base = declarative_base()
 
 class Block(Base):
     __tablename__ = 'blocks'
-
+    
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, nullable=False)
+    hash = Column(String, unique=True, nullable=False)
     previous_hash = Column(String, nullable=False)
-    hash = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
     nonce = Column(Integer, nullable=False)
+    difficulty = Column(Integer, nullable=False)
     transactions = relationship('Transaction', back_populates='block')
 
 class Transaction(Base):
     __tablename__ = 'transactions'
-
+    
     id = Column(Integer, primary_key=True)
-    sender = Column(String, nullable=False)
-    recipient = Column(String, nullable=False)
+    hash = Column(String, unique=True, nullable=False)
+    from_address = Column(String, nullable=False)
+    to_address = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
     block_id = Column(Integer, ForeignKey('blocks.id'))
     block = relationship('Block', back_populates='transactions')
+
+class Account(Base):
+    __tablename__ = 'accounts'
+    
+    id = Column(Integer, primary_key=True)
+    address = Column(String, unique=True, nullable=False)
+    balance = Column(Float, default=0.0)
+    nonce = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
