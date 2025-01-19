@@ -6,10 +6,10 @@ from sqlalchemy import pool
 from alembic import context
 
 # Add the current directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Import the models
-from alembic.models import Base
+# Import the models from the local directory
+from models import Base
 
 # This is the Alembic Config object
 config = context.config
