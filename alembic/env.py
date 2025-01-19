@@ -1,19 +1,24 @@
+import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-# Import the models from local directory
-from models import Base
+# Add the current directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# this is the Alembic Config object
+# Import the models
+from alembic.models import Base
+
+# This is the Alembic Config object
 config = context.config
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here for 'autogenerate' support
+# Set MetaData object for autogenerate support
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
