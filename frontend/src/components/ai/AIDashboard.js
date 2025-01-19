@@ -43,37 +43,30 @@ const AIDashboard = () => {
     }, []);
 
     const getCurrentDemand = () => {
-        // Implementation to get current demand from blockchain
         return 5000; // Placeholder
     };
 
     const getCurrentPrice = () => {
-        // Implementation to get current price from blockchain
         return 10.5; // Placeholder
     };
 
     const getCurrentVolume = () => {
-        // Implementation to get current transaction volume
         return 100000; // Placeholder
     };
 
     const getCurrentStakingRatio = () => {
-        // Implementation to get current staking ratio
         return 0.6; // Placeholder
     };
 
     const getCurrentSupply = () => {
-        // Implementation to get current supply
         return 5000000; // Placeholder
     };
 
     const getRecentTransactions = async () => {
-        // Implementation to get recent transactions
         return []; // Placeholder
     };
 
     const getSocialData = async () => {
-        // Implementation to get social media data
         return []; // Placeholder
     };
 
@@ -81,12 +74,10 @@ const AIDashboard = () => {
         try {
             setLoading(true);
             
-            // Fetch AI system stats
             const statsResponse = await fetch('/api/ai/stats');
             const stats = await statsResponse.json();
             setAIStats(stats);
 
-            // Get current market data
             const currentMarket = {
                 demand: getCurrentDemand(),
                 price: getCurrentPrice(),
@@ -95,7 +86,6 @@ const AIDashboard = () => {
                 current_supply: getCurrentSupply()
             };
 
-            // Fetch supply prediction
             const predictionResponse = await fetch('/api/ai/supply/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -104,7 +94,6 @@ const AIDashboard = () => {
             const prediction = await predictionResponse.json();
             setSupplyPrediction(prediction);
 
-            // Fetch market sentiment
             const sentimentResponse = await fetch('/api/ai/market/sentiment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -116,7 +105,6 @@ const AIDashboard = () => {
             const sentiment = await sentimentResponse.json();
             setMarketSentiment(sentiment);
 
-            // Fetch recent anomalies
             const anomalyResponse = await fetch('/api/ai/transactions/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -1,23 +1,19 @@
 from flask import Flask
 from api.routes import blockchain_bp
-from api.governance_routes import governance_bp
+from api.ai_routes import ai_bp
 from blockchain.blockchain import Blockchain
-from consensus.pos import ProofOfStake
-from staking.staking_pool import StakingPool
-from governance.governance import Governance
+from ai.ai_manager import AIManager
 
 def create_app():
     app = Flask(__name__)
 
     # Initialize components
     blockchain = Blockchain()
-    pos = ProofOfStake()
-    staking_pool = StakingPool()
-    governance = Governance()
+    ai_manager = AIManager()
 
     # Register blueprints
     app.register_blueprint(blockchain_bp, url_prefix='/api/blockchain')
-    app.register_blueprint(governance_bp, url_prefix='/api/governance')
+    app.register_blueprint(ai_bp, url_prefix='/api/ai')
 
     @app.route('/health')
     def health_check():
