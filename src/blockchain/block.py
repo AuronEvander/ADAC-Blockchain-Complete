@@ -1,26 +1,24 @@
+from dataclasses import dataclass
 from datetime import datetime
-from hashlib import sha256
-import json
+from typing import List
+import hashlib
 
+@dataclass
 class Block:
-    def __init__(self, timestamp, transactions, previous_hash):
-        self.timestamp = timestamp
-        self.transactions = transactions
-        self.previous_hash = previous_hash
-        self.nonce = 0
-        self.hash = self.calculate_hash()
+    index: int
+    timestamp: float
+    transactions: List[dict]
+    previous_hash: str
+    nonce: int = 0
+    
+    def calculate_hash(self) -> str:
+        block_string = f"{self.index}{self.timestamp}{self.transactions}{self.previous_hash}{self.nonce}"
+        return hashlib.sha256(block_string.encode()).hexdigest()
 
-    def calculate_hash(self):
-        block_string = json.dumps({
-            "timestamp": str(self.timestamp),
-            "transactions": self.transactions,
-            "previous_hash": self.previous_hash,
-            "nonce": self.nonce
-        }, sort_keys=True).encode()
-        return sha256(block_string).hexdigest()
-
-    def mine_block(self, difficulty):
-        while self.hash[:difficulty] != '0' * difficulty:
+    def mine_block(self, difficulty: int) -> str:
+        target = '0' * difficulty
+        while True:
+            hash_value = self.calculate_hash()
+            if hash_value[:difficulty] == target:
+                return hash_value
             self.nonce += 1
-            self.hash = self.calculate_hash()
-        return self.hash
