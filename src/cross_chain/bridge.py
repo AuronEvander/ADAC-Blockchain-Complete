@@ -1,51 +1,71 @@
-from typing import Dict, Optional
-from decimal import Decimal
-import time
+from typing import Dict, List
+from datetime import datetime
 import hashlib
 
 class CrossChainBridge:
     def __init__(self):
-        self.supported_chains = {
-            'ethereum': {'chain_id': 1},
-            'binance': {'chain_id': 56},
-            'polygon': {'chain_id': 137}
-        }
-        self.bridge_transactions: Dict[str, Dict] = {}
-        self.locked_assets: Dict[str, Dict] = {}
-
-    async def initiate_transfer(
-        self,
-        from_chain: str,
-        to_chain: str,
-        token: str,
-        amount: Decimal,
-        sender: str,
-        recipient: str
-    ) -> Optional[str]:
-        if from_chain not in self.supported_chains or to_chain not in self.supported_chains:
-            return None
-
-        # Generate transaction ID
-        tx_id = self._generate_transaction_id(from_chain, to_chain, token, amount, sender, recipient)
-
-        # Lock assets on source chain
-        if not await self._lock_assets(from_chain, token, amount, sender):
-            return None
-
-        # Create bridge transaction
-        self.bridge_transactions[tx_id] = {
-            'from_chain': from_chain,
-            'to_chain': to_chain,
-            'token': token,
+        self.locked_tokens: Dict[str, Dict[str, float]] = {}
+        self.pending_transfers: List[Dict] = []
+        self.completed_transfers: List[Dict] = []
+        self.validators: List[str] = []
+        self.required_validations = 2
+        
+    def lock_tokens(self, chain_id: str, token_address: str, amount: float, recipient: str) -> str:
+        transfer_id = hashlib.sha256(
+            f"{chain_id}{token_address}{amount}{recipient}{datetime.now().timestamp()}".encode()
+        ).hexdigest()
+        
+        if chain_id not in self.locked_tokens:
+            self.locked_tokens[chain_id] = {}
+        
+        self.locked_tokens[chain_id][token_address] = \
+            self.locked_tokens[chain_id].get(token_address, 0) + amount
+            
+        self.pending_transfers.append({
+            'id': transfer_id,
+            'chain_id': chain_id,
+            'token_address': token_address,
             'amount': amount,
-            'sender': sender,
             'recipient': recipient,
-            'status': 'PENDING',
-            'timestamp': time.time()
+            'status': 'pending',
+            'validations': [],
+            'timestamp': datetime.now().timestamp()
+        })
+        
+        return transfer_id
+        
+    def validate_transfer(self, transfer_id: str, validator: str) -> bool:
+        if validator not in self.validators:
+            return False
+            
+        transfer = next((t for t in self.pending_transfers if t['id'] == transfer_id), None)
+        if not transfer:
+            return False
+            
+        if validator in transfer['validations']:
+            return False
+            
+        transfer['validations'].append(validator)
+        
+        if len(transfer['validations']) >= self.required_validations:
+            transfer['status'] = 'completed'
+            self.completed_transfers.append(transfer)
+            self.pending_transfers.remove(transfer)
+            
+        return True
+        
+    def get_transfer_status(self, transfer_id: str) -> Dict:
+        transfer = next(
+            (t for t in self.pending_transfers + self.completed_transfers 
+             if t['id'] == transfer_id),
+            None
+        )
+        
+        if not transfer:
+            return {'status': 'not_found'}
+            
+        return {
+            'status': transfer['status'],
+            'validations': len(transfer['validations']),
+            'required_validations': self.required_validations
         }
-
-        return tx_id
-
-    def _generate_transaction_id(self, *args) -> str:
-        tx_string = ''.join(str(arg) for arg in args)
-        return hashlib.sha256(tx_string.encode()).hexdigest()
