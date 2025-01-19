@@ -1,9 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 setup(
     name="adac-blockchain",
     version="0.1.0",
-    packages=find_packages(),
+    package_dir={'': 'src'},
+    packages=find_namespace_packages(include=['src*']),
     install_requires=[
         'fastapi',
         'uvicorn',
