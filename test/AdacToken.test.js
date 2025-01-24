@@ -34,11 +34,9 @@ describe("AdacToken", function () {
     });
 
     it("Should fail if sender doesn't have enough tokens", async function () {
-      const initialOwnerBalance = await token.balanceOf(owner.address);
       await expect(
         token.connect(addr1).transfer(owner.address, 1)
-      ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
-      expect(await token.balanceOf(owner.address)).to.equal(initialOwnerBalance);
+      ).to.be.revertedWithCustomError(token, "ERC20InsufficientBalance");
     });
   });
 
