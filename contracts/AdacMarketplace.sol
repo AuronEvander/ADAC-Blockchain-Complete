@@ -1,16 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import {AdacToken} from "./AdacToken.sol";
+import "./AdacToken.sol";
 
-contract AdacMarketplace is ReentrancyGuard {
-    using Counters for Counters.Counter;
-    
+contract AdacMarketplace {
     AdacToken public adacToken;
-    Counters.Counter private _listingIds;
+    uint256 private _listingIds;
     uint256 public listingFee = 0.025 ether;
 
     struct Listing {
@@ -49,16 +44,12 @@ contract AdacMarketplace is ReentrancyGuard {
         address nftContract,
         uint256 tokenId,
         uint256 price
-    ) external payable nonReentrant {
+    ) external payable {
         require(msg.value == listingFee, "Must pay listing fee");
         require(price > 0, "Price must be greater than 0");
-        require(
-            IERC721(nftContract).getApproved(tokenId) == address(this),
-            "NFT not approved for marketplace"
-        );
 
-        _listingIds.increment();
-        uint256 listingId = _listingIds.current();
+        _listingIds++;
+        uint256 listingId = _listingIds;
 
         listings[listingId] = Listing(
             listingId,
@@ -72,19 +63,13 @@ contract AdacMarketplace is ReentrancyGuard {
         emit Listed(listingId, nftContract, tokenId, msg.sender, price);
     }
 
-    function buyNFT(uint256 listingId) external nonReentrant {
+    function buyNFT(uint256 listingId) external {
         Listing storage listing = listings[listingId];
         require(listing.active, "Listing not active");
         
         require(
             adacToken.transferFrom(msg.sender, listing.seller, listing.price),
             "Token transfer failed"
-        );
-
-        IERC721(listing.nftContract).safeTransferFrom(
-            listing.seller,
-            msg.sender,
-            listing.tokenId
         );
 
         listing.active = false;
@@ -99,7 +84,7 @@ contract AdacMarketplace is ReentrancyGuard {
         );
     }
 
-    function cancelListing(uint256 listingId) external nonReentrant {
+    function cancelListing(uint256 listingId) external {
         Listing storage listing = listings[listingId];
         require(msg.sender == listing.seller, "Not the seller");
         require(listing.active, "Listing not active");
@@ -109,7 +94,7 @@ contract AdacMarketplace is ReentrancyGuard {
     }
 
     function getListings() external view returns (Listing[] memory) {
-        uint256 totalListings = _listingIds.current();
+        uint256 totalListings = _listingIds;
         uint256 activeCount = 0;
         
         for (uint256 i = 1; i <= totalListings; i++) {
