@@ -2,10 +2,12 @@
   "name": "adac-blockchain",
   "version": "1.0.0",
   "description": "ADAC Blockchain implementation",
+  "main": "index.js",
   "scripts": {
     "build": "hardhat compile",
     "predeploy": "npm run build",
-    "deploy": "hardhat run scripts/deploy.js --network sepolia"
+    "deploy": "hardhat run scripts/deploy.js --network sepolia",
+    "test": "hardhat test"
   },
   "dependencies": {
     "hardhat": "^2.19.4"
