@@ -1,12 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { formatDistance } from 'date-fns';
 
-interface Transaction {
+export interface Transaction {
  id: string;
  type: string;
  amount: string;
  status: string;
- timestamp: number;
+ timestamp: Date;
+}
+
+export interface Token {
+ symbol: string;
+ balance: string;
+}
+
+interface TransactionHistoryProps {
+ transactions: Transaction[];
+ tokens: Token[];
 }
 
 interface SortConfig {
@@ -14,16 +24,12 @@ interface SortConfig {
  direction: 'asc' | 'desc';
 }
 
-interface TransactionListProps {
- transactions: Transaction[];
-}
-
-const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
- const [searchTerm, setSearchTerm] = useState('');
+const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions, tokens }) => {
  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'timestamp', direction: 'desc' });
+ const [searchTerm, setSearchTerm] = useState('');
 
  const filtered = useMemo(() => {
-   return transactions.filter((tx) => 
+   return transactions.filter(tx => 
      tx.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
      tx.amount.toLowerCase().includes(searchTerm.toLowerCase()) ||
      tx.status.toLowerCase().includes(searchTerm.toLowerCase())
@@ -31,15 +37,24 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
  }, [transactions, searchTerm]);
 
  const sortedData = useMemo(() => {
-   return [...filtered].sort((a, b) => {
-     if (!sortConfig) return 0;
-     const aVal = a[sortConfig.key] ?? '';
-     const bVal = b[sortConfig.key] ?? '';
-     
-     if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-     if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-     return 0;
-   });
+   const sorted = [...filtered];
+   if (sortConfig) {
+     sorted.sort((a, b) => {
+       if (sortConfig.key === 'timestamp') {
+         return sortConfig.direction === 'asc' 
+           ? a.timestamp.getTime() - b.timestamp.getTime()
+           : b.timestamp.getTime() - a.timestamp.getTime();
+       }
+
+       const aVal = String(a[sortConfig.key]);
+       const bVal = String(b[sortConfig.key]);
+       
+       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+       if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+       return 0;
+     });
+   }
+   return sorted;
  }, [filtered, sortConfig]);
 
  const requestSort = (key: keyof Transaction) => {
@@ -104,7 +119,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
                  </span>
                </td>
                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                 {tx.amount} ADAC
+                 {tx.amount} {tokens.find(t => t.symbol === tx.type)?.symbol || 'ADAC'}
                </td>
                <td className="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -129,4 +144,4 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
  );
 };
 
-export default TransactionList;
+export default TransactionHistory;

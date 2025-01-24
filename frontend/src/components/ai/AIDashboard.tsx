@@ -5,7 +5,17 @@ import {
   AlertTriangle,
   Activity,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Simple Alert components
+const Alert: React.FC<{ variant?: 'destructive'; children: React.ReactNode }> = ({ children }) => (
+  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    {children}
+  </div>
+);
+
+const AlertDescription: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span className="block sm:inline">{children}</span>
+);
 
 interface AIStats {
   models: {
@@ -17,14 +27,6 @@ interface AIStats {
     total: number;
   };
   timestamp: string;
-}
-
-interface MarketData {
-  demand: number;
-  price: number;
-  transaction_volume: number;
-  staking_ratio: number;
-  current_supply: number;
 }
 
 interface SupplyPrediction {
@@ -56,48 +58,39 @@ const AIDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getCurrentMarketData = (): MarketData => ({
-    demand: 5000,
-    price: 10.5,
-    transaction_volume: 100000,
-    staking_ratio: 0.6,
-    current_supply: 5000000
-  });
-
   const fetchAIData = async () => {
     try {
       setLoading(true);
       
-      // Fetch AI system stats
-      const statsResponse = await fetch('/api/ai/stats');
-      if (!statsResponse.ok) throw new Error('Failed to fetch AI stats');
-      const stats = await statsResponse.json();
-      setAIStats(stats);
-
-      // Get current market data
-      const currentMarket = getCurrentMarketData();
-
-      // Fetch supply prediction
-      const predictionResponse = await fetch('/api/ai/supply/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentMarket)
+      // Mock data for development
+      setAIStats({
+        models: {
+          supply_model: { trained: true }
+        },
+        historical_data_points: { total: 15000 },
+        timestamp: new Date().toISOString()
       });
-      if (!predictionResponse.ok) throw new Error('Failed to fetch supply prediction');
-      const prediction = await predictionResponse.json();
-      setSupplyPrediction(prediction);
 
-      // Fetch market sentiment
-      const sentimentResponse = await fetch('/api/ai/market/sentiment');
-      if (!sentimentResponse.ok) throw new Error('Failed to fetch market sentiment');
-      const sentiment = await sentimentResponse.json();
-      setMarketSentiment(sentiment);
+      setSupplyPrediction({
+        predicted_supply: 5200000,
+        recommended_change: 2.5,
+        confidence: 0.95
+      });
 
-      // Fetch recent anomalies
-      const anomalyResponse = await fetch('/api/ai/transactions/analyze');
-      if (!anomalyResponse.ok) throw new Error('Failed to fetch anomalies');
-      const anomalyData = await anomalyResponse.json();
-      setAnomalies(anomalyData.results.filter((r: Anomaly) => r.severity !== 'low'));
+      setMarketSentiment({
+        sentiment_score: 0.75,
+        confidence: 0.85,
+        factors: ['High trading volume', 'Positive social sentiment']
+      });
+
+      setAnomalies([{
+        id: '1',
+        timestamp: new Date().toISOString(),
+        type: 'Large Transaction',
+        severity: 'medium',
+        description: 'Unusual trading pattern detected',
+        transaction_hash: '0x123...abc'
+      }]);
 
       setError(null);
     } catch (err) {
@@ -133,7 +126,7 @@ const AIDashboard: React.FC = () => {
               Real-time AI-driven insights and predictions
             </p>
           </div>
-          <Brain className="h-12 w-12 text-primary" />
+          <Brain className="h-12 w-12 text-blue-500" />
         </div>
 
         {error && (
@@ -144,6 +137,7 @@ const AIDashboard: React.FC = () => {
 
         {/* Metrics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Supply Prediction Card */}
           <div className="p-4 bg-white rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -151,10 +145,10 @@ const AIDashboard: React.FC = () => {
                 <p className="text-3xl font-bold mt-2">
                   {supplyPrediction?.predicted_supply.toLocaleString()}
                 </p>
-                {supplyPrediction?.recommended_change !== 0 && (
-                  <p className={`text-sm mt-1 ${supplyPrediction?.recommended_change > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {supplyPrediction?.recommended_change > 0 ? '+' : ''}
-                    {supplyPrediction?.recommended_change}%
+                {supplyPrediction?.recommended_change != null && (
+                  <p className={`text-sm mt-1 ${supplyPrediction.recommended_change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {supplyPrediction.recommended_change > 0 ? '+' : ''}
+                    {supplyPrediction.recommended_change.toFixed(2)}%
                   </p>
                 )}
               </div>
@@ -162,21 +156,25 @@ const AIDashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Market Sentiment Card */}
           <div className="p-4 bg-white rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold">Market Sentiment</h3>
                 <p className="text-3xl font-bold mt-2">
-                  {marketSentiment?.sentiment_score.toFixed(2)}
+                  {marketSentiment?.sentiment_score ? (marketSentiment.sentiment_score * 100).toFixed(1) : 0}%
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {marketSentiment?.confidence.toFixed(1)}% confidence
-                </p>
+                {marketSentiment?.confidence != null && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {(marketSentiment.confidence * 100).toFixed(1)}% confidence
+                  </p>
+                )}
               </div>
               <Activity className="h-10 w-10 text-green-500" />
             </div>
           </div>
 
+          {/* Anomalies Card */}
           <div className="p-4 bg-white rounded-lg shadow">
             <div className="flex items-center justify-between">
               <div>
